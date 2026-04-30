@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckService,
@@ -8,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { RedisHealthIndicator } from './redis.health';
 
+@ApiTags('Sistema')
 @Controller('health')
 export class HealthController {
   constructor(
@@ -20,6 +22,7 @@ export class HealthController {
 
   @Get()
   @HealthCheck()
+  @ApiOperation({ summary: 'Status de integridade do backend (Healthcheck)' })
   check() {
     return this.health.check([
       // Redis health check

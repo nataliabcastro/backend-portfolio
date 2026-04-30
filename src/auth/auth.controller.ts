@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { User as IUser } from '@prisma/client'
 
 import { Validate } from '@shared/decorators/validate.decorator'
@@ -15,6 +16,7 @@ import { RegisterDto } from './dto/register.dto'
 import { RegisterSchema } from './schemas/register.schema'
 import { RefreshResponse } from './interfaces/refresh-response.interface'
 
+@ApiTags('Autenticação')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -58,6 +60,8 @@ export class AuthController {
 
   @Get('me')
   @Auth()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Retorna informações do usuário atual logado' })
   async me(@User() user: IUser): Promise<IUser> {
     return user
   }
