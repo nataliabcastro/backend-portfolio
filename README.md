@@ -112,3 +112,16 @@ To stop the containers:
 
 - Get the endpoints from the folder `workspaces`. Modules available:
   - [Insomnia](https://insomnia.rest/)
+
+### Screenshots
+
+- Health checks
+
+![Health Checks Dashboard](docs/health.png)
+
+- Queue status
+
+![Queue Status Dashboard](docs/queue-status.png)
+
+
+
