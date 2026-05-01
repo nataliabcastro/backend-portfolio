@@ -1,9 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 
-export class RegisterResponse {
-  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiJ9...' })
-  accessToken: string
-
+export class RefreshDto {
   @ApiProperty({ example: '1|abc123randomstring' })
   refreshToken: string
 }

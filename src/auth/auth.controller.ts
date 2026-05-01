@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody, ApiResponse } from '@nestjs/swagger'
 import { User as IUser } from '@prisma/client'
 
 import { Validate } from '@shared/decorators/validate.decorator'
@@ -8,15 +8,18 @@ import { User } from '@shared/decorators/user.decorator'
 
 import { AuthService } from './auth.service'
 
-import { LoginResponse } from './interfaces/login-response.interface'
-import { LoginSchema } from './schemas/login.schema'
 import { LoginDto } from './dto/login.dto'
-import { RegisterResponse } from './interfaces/register-response.interface'
+import { LoginSchema } from './schemas/login.schema'
+import { LoginResponse } from './interfaces/login-response.interface'
+
 import { RegisterDto } from './dto/register.dto'
 import { RegisterSchema } from './schemas/register.schema'
+import { RegisterResponse } from './interfaces/register-response.interface'
+
+import { RefreshDto } from './dto/refresh.dto'
 import { RefreshResponse } from './interfaces/refresh-response.interface'
 
-@ApiTags('Autenticação')
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -24,6 +27,10 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @Validate(LoginSchema)
+  @ApiOperation({ summary: 'Authenticates a user and returns access tokens' })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, type: LoginResponse })
+  @ApiResponse({ status: 404, description: 'Invalid email or password' })
   async login(@Body() data: LoginDto): Promise<LoginResponse> {
     const user = await this.authService.validateLogin(data)
 
@@ -35,6 +42,10 @@ export class AuthController {
   @Post('register')
   @HttpCode(201)
   @Validate(RegisterSchema)
+  @ApiOperation({ summary: 'Registers a new user and returns access tokens' })
+  @ApiBody({ type: RegisterDto })
+  @ApiResponse({ status: 201, type: RegisterResponse })
+  @ApiResponse({ status: 422, description: 'Email already registered' })
   async register(@Body() data: RegisterDto): Promise<RegisterResponse> {
     await this.authService.validateRegister(data)
 
@@ -47,21 +58,24 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(200)
-  async refresh(
-    @Body('refreshToken') refreshToken: string
-  ): Promise<RefreshResponse> {
-    const user = await this.authService.validateRefresh(refreshToken)
+  @ApiOperation({ summary: 'Renews tokens from a valid refresh token' })
+  @ApiBody({ type: RefreshDto })
+  @ApiResponse({ status: 200, type: RefreshResponse })
+  @ApiResponse({ status: 404, description: 'Invalid refresh token' })
+  async refresh(@Body() data: RefreshDto): Promise<RefreshResponse> {
+    const user = await this.authService.validateRefresh(data.refreshToken)
 
-    const { accessToken, refreshToken: newRefreshToken } =
-      await this.authService.login(user)
+    const { accessToken, refreshToken } = await this.authService.login(user)
 
-    return { accessToken, refreshToken: newRefreshToken }
+    return { accessToken, refreshToken }
   }
 
   @Get('me')
   @Auth()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Retorna informações do usuário atual logado' })
+  @ApiOperation({ summary: 'Returns information of the currently logged-in user' })
+  @ApiResponse({ status: 200, description: 'Authenticated user data' })
+  @ApiResponse({ status: 401, description: 'Missing or invalid access token' })
   async me(@User() user: IUser): Promise<IUser> {
     return user
   }

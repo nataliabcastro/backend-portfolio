@@ -6,10 +6,9 @@ import {
   MemoryHealthIndicator,
   DiskHealthIndicator,
 } from '@nestjs/terminus';
-import { ConfigService } from '@nestjs/config';
 import { RedisHealthIndicator } from './redis.health';
 
-@ApiTags('Sistema')
+@ApiTags('System')
 @Controller('health')
 export class HealthController {
   constructor(
@@ -17,12 +16,11 @@ export class HealthController {
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
     private redis: RedisHealthIndicator,
-    private configService: ConfigService,
   ) {}
 
   @Get()
   @HealthCheck()
-  @ApiOperation({ summary: 'Status de integridade do backend (Healthcheck)' })
+  @ApiOperation({ summary: 'Backend health status (Healthcheck)' })
   check() {
     return this.health.check([
       // Redis health check
